@@ -4,9 +4,12 @@ title: "I Migrated My Home Server to a Three-Node K3s Cluster. This Is the Archi
 author: Mohammad Obaidullah Tusher
 url: https://medium.com/@tusher16
 project_url: https://github.com/tusher16/homelab
+draft: true
 ---
 
 # I Migrated My Home Server to a Three-Node K3s Cluster. This Is the Architecture.
+
+> Draft note: this article is kept in the repo as working copy. Several YAML snippets are still placeholders and should be replaced before publication.
 
 ### From a single Docker Compose machine to a distributed Kubernetes setup running AI workloads, production databases, and automated SSL on refurbished hardware in Berlin.
 
