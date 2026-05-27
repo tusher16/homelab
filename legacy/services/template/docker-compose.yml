@@ -1,0 +1,30 @@
+# legacy/services/template/docker-compose.yml
+#
+# Reusable template for any new service.
+# Copy this folder, rename it, fill in the VIRTUAL_HOST values and your app details.
+#
+# Rules:
+#   - NEVER expose port 80 or 443 — the proxy owns those
+#   - NEVER set external: false on the nginx-proxy network
+#   - Internal-only containers (e.g. databases, Ollama) must NOT have VIRTUAL_HOST
+#   - Set Cloudflare to grey cloud BEFORE first deploy, switch to orange AFTER SSL is issued
+
+services:
+  your-app:
+    build: .
+    container_name: your-app-name
+    restart: always
+    volumes:
+      - ./data:/app/data        # remove if your app has no persistent data
+    env_file: .env
+    environment:
+      - VIRTUAL_HOST=yoursubdomain.yourdomain.com
+      - VIRTUAL_PORT=8000       # port your app listens on inside the container
+      - LETSENCRYPT_HOST=yoursubdomain.yourdomain.com
+      - LETSENCRYPT_EMAIL=you@example.com
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true             # MUST be external: true — never false

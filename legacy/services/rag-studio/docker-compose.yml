@@ -1,0 +1,49 @@
+# legacy/services/rag-studio/docker-compose.yml
+#
+# Two services:
+#   rag-studio  — public FastAPI app (VIRTUAL_HOST set, gets SSL)
+#   ollama      — internal LLM only (NO VIRTUAL_HOST — never exposed publicly)
+#
+# Ollama is reachable from rag-studio as http://ollama:11434
+# OLLAMA_KEEP_ALIVE=-1 keeps the model loaded in memory permanently.
+# Without this, Ollama unloads the model 5 minutes after the last request,
+# causing 30-40 second reload delays on the next query.
+
+services:
+  ollama:
+    image: ollama/ollama:0.7.0
+    container_name: ollama
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1
+      # NO VIRTUAL_HOST here — internal only
+    networks:
+      - nginx-proxy
+
+  rag-studio:
+    build: .
+    container_name: rag-studio
+    restart: always
+    volumes:
+      - ./data:/app/data
+      - ./vectorstore:/app/vectorstore
+    env_file: .env
+    environment:
+      - VIRTUAL_HOST=rag.yourdomain.com
+      - VIRTUAL_PORT=8000
+      - LETSENCRYPT_HOST=rag.yourdomain.com
+      - LETSENCRYPT_EMAIL=you@example.com
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    networks:
+      - nginx-proxy
+
+volumes:
+  ollama_data:
+
+networks:
+  nginx-proxy:
+    external: true

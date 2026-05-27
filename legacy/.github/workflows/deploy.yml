@@ -1,0 +1,38 @@
+# legacy/.github/workflows/deploy.yml
+#
+# Standard SSH deploy workflow used by all Docker Compose services.
+# Copy this file into your app repo at .github/workflows/deploy.yml
+# and replace <your-project-name> with your actual folder name on the server.
+#
+# GitHub Secrets required (set these in repo Settings → Secrets):
+#   SERVER_IP  = ssh.yourdomain.com   ← MUST be grey cloud (DNS only) in Cloudflare
+#   SSH_KEY    = contents of ~/.ssh/id_ed25519
+#
+# One-time manual step before CI/CD works:
+#   ssh your-server
+#   cd /home/<your-user>
+#   git clone https://github.com/<you>/<repo>.git
+#   cd <repo>
+#   nano .env   ← create the env file, never committed
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: <your-server-username>
+          key: ${{ secrets.SSH_KEY }}
+          port: <your-ssh-port>
+          script: |
+            cd /home/<your-user>/<your-project-name>
+            git pull origin main
+            docker compose up --build -d

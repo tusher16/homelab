@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  name: flashdeutsch-vocab
+  namespace: default
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: flashdeutsch.tusher16.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: flashdeutsch-vocab
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - flashdeutsch.tusher16.com
+      secretName: flashdeutsch-vocab-tls

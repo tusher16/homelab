@@ -1,0 +1,28 @@
+# legacy/services/n8n/docker-compose.yml
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: always
+    volumes:
+      - n8n_data:/home/node/.n8n
+    env_file: .env
+    environment:
+      - VIRTUAL_HOST=n8n.yourdomain.com
+      - VIRTUAL_PORT=5678
+      - LETSENCRYPT_HOST=n8n.yourdomain.com
+      - LETSENCRYPT_EMAIL=you@example.com
+      - N8N_HOST=n8n.yourdomain.com
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://n8n.yourdomain.com
+    networks:
+      - nginx-proxy
+
+volumes:
+  n8n_data:
+
+networks:
+  nginx-proxy:
+    external: true

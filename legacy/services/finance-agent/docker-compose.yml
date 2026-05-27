@@ -1,0 +1,26 @@
+# legacy/services/finance-agent/docker-compose.yml
+#
+# Data files are NEVER in git — copy them to the server manually via SCP:
+#   scp -P <ssh-port> ./data/family_budget.json user@server:~/finance-agent/data/
+#
+# The data/ folder must exist on the server before first deploy.
+
+services:
+  finance-agent:
+    build: .
+    container_name: finance-agent
+    restart: always
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    environment:
+      - VIRTUAL_HOST=finance.yourdomain.com
+      - VIRTUAL_PORT=8000
+      - LETSENCRYPT_HOST=finance.yourdomain.com
+      - LETSENCRYPT_EMAIL=you@example.com
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true

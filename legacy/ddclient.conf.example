@@ -1,0 +1,40 @@
+# /etc/ddclient.conf
+#
+# Keeps Cloudflare DNS A records updated when your home IP changes.
+# Install: sudo apt install ddclient
+# Edit:    sudo nano /etc/ddclient.conf
+# Restart: sudo systemctl restart ddclient
+# Test:    sudo ddclient -force -verbose
+#
+# Get your Cloudflare API token:
+#   Cloudflare dashboard → My Profile → API Tokens
+#   → Create Token → Zone:DNS:Edit permission for your zone
+
+daemon=300                          # check every 5 minutes
+syslog=yes
+pid=/var/run/ddclient.pid
+
+use=web, web=https://api.ipify.org  # detect current public IP
+
+# --- First domain ---
+protocol=cloudflare
+server=api.cloudflare.com/client/v4
+zone=yourdomain.com
+login=you@example.com
+password=<cloudflare-api-token>
+yourdomain.com, www.yourdomain.com, n8n.yourdomain.com, finance.yourdomain.com, rag.yourdomain.com, ssh.yourdomain.com
+
+# --- Second domain (if you have one) ---
+protocol=cloudflare
+server=api.cloudflare.com/client/v4
+zone=yoursecondomain.com
+login=you@example.com
+password=<cloudflare-api-token>
+yoursecondomain.com, www.yoursecondomain.com
+
+# Notes:
+# - ssh.yourdomain.com MUST stay grey cloud (DNS only) in Cloudflare
+#   GitHub Actions needs direct TCP access to your SSH port
+# - All other subdomains can be orange cloud (proxied)
+# - Switch a record to grey cloud during first deploy to get SSL cert,
+#   then switch back to orange cloud after cert is issued

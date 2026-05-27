@@ -1,0 +1,28 @@
+# legacy/services/portainer/docker-compose.yml
+#
+# Note: Portainer was decommissioned when migrating to K3s.
+# Replaced by k9s (terminal) + Headlamp (web UI).
+# Kept here for reference only.
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    environment:
+      - VIRTUAL_HOST=portainer.yourdomain.com
+      - VIRTUAL_PORT=9000
+      - LETSENCRYPT_HOST=portainer.yourdomain.com
+      - LETSENCRYPT_EMAIL=you@example.com
+    networks:
+      - nginx-proxy
+
+volumes:
+  portainer_data:
+
+networks:
+  nginx-proxy:
+    external: true

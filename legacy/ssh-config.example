@@ -1,0 +1,15 @@
+# ~/.ssh/config
+# Add this on your local machine (Mac/Linux) so you can just type: ssh my-server
+#
+# Generate a key pair if you don't have one:
+#   ssh-keygen -t ed25519 -C "your-email@example.com"
+#
+# Copy your public key to the server:
+#   ssh-copy-id -p <ssh-port> your-user@your-server-ip
+#   or manually: cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys on the server
+
+Host my-server
+    HostName <your-server-local-ip>   # e.g. 192.168.x.x
+    User <your-username>
+    Port <your-ssh-port>              # not 22 — use a custom port
+    IdentityFile ~/.ssh/id_ed25519

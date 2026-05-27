@@ -1,0 +1,55 @@
+# /home/<your-user>/proxy/docker-compose.yml
+#
+# Start this ONCE before deploying any services.
+# This is the only container that owns ports 80 and 443.
+# All other app containers connect to the nginx-proxy network
+# and get routed by VIRTUAL_HOST — they never expose ports themselves.
+#
+# Usage:
+#   docker compose up -d
+#
+# To create the shared network first (one-time):
+#   docker network create nginx-proxy
+
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:1.6
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - conf:/etc/nginx/conf.d
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - nginx-proxy
+
+  acme-companion:
+    image: nginxproxy/acme-companion:2.4
+    container_name: nginx-proxy-le
+    restart: always
+    environment:
+      - DEFAULT_EMAIL=<your-email>
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - nginx-proxy
+
+volumes:
+  conf:
+  vhost:
+  html:
+  certs:
+  acme:
+
+networks:
+  nginx-proxy:
+    external: true

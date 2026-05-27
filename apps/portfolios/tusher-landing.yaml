@@ -1,0 +1,171 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tusher-landing-html
+  namespace: default
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Mohammad Tusher — Data & ML Engineer</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: #0f1117;
+          color: #e2e8f0;
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .container { text-align: center; max-width: 480px; padding: 2rem; }
+        .name { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: .5rem; }
+        .title { font-size: 1rem; color: #64748b; margin-bottom: .5rem; }
+        .location { font-size: .875rem; color: #475569; margin-bottom: 2rem; }
+        .status {
+          display: inline-block;
+          background: rgba(251,191,36,.1);
+          border: 1px solid rgba(251,191,36,.3);
+          color: #fbbf24;
+          padding: .375rem 1rem;
+          border-radius: 999px;
+          font-size: .8rem;
+          margin-bottom: 2.5rem;
+          letter-spacing: .05em;
+        }
+        .links { display: flex; flex-direction: column; gap: .75rem; }
+        .link {
+          display: block;
+          padding: .875rem 1.5rem;
+          border: 1px solid #1e293b;
+          border-radius: 10px;
+          color: #cbd5e1;
+          text-decoration: none;
+          background: #1e293b;
+          transition: border-color .2s, color .2s;
+          font-size: .95rem;
+        }
+        .link:hover { border-color: #3b82f6; color: #fff; }
+        .footer { margin-top: 2.5rem; font-size: .75rem; color: #334155; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="name">Mohammad Tusher</div>
+        <div class="title">Data & ML Engineer · Homelab Builder</div>
+        <div class="location">📍 Berlin, Germany</div>
+        <div class="status">🔧 Portfolio undergoing maintenance</div>
+        <div class="links">
+          <a class="link" href="https://www.linkedin.com/in/tusher16" target="_blank">
+            💼 LinkedIn — Professional Profile
+          </a>
+          <a class="link" href="https://github.com/tusher16" target="_blank">
+            🐙 GitHub — Code & Projects
+          </a>
+          <a class="link" href="https://medium.com/@tusher16" target="_blank">
+            ✍️ Medium — Technical Writing
+          </a>
+          <a class="link" href="https://rag.tusher16.com" target="_blank">
+            🤖 RAG Studio — Live ML Project
+          </a>
+        </div>
+        <div class="footer">Running on a self-hosted K3s cluster — Berlin 🇩🇪</div>
+      </div>
+    </body>
+    </html>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tusher-landing
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tusher-landing
+  template:
+    metadata:
+      labels:
+        app: tusher-landing
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: elitedesk-node1
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
+      volumes:
+        - name: html
+          configMap:
+            name: tusher-landing-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tusher-landing
+  namespace: default
+spec:
+  selector:
+    app: tusher-landing
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tusher-landing
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Mohammad Tusher"
+    gethomepage.dev/group: "Portfolios"
+    gethomepage.dev/description: "tusher16.com — landing page"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: tusher16.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tusher-landing
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - tusher16.com
+      secretName: tusher-landing-tls

@@ -1,0 +1,29 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: tusher16@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - dns01:
+          cloudflare:
+            email: tusher16@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret
+              key: api-token
+        selector:
+          dnsZones:
+            - tusher16.com
+      - dns01:
+          cloudflare:
+            email: safina7894@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token-safina
+              key: api-token
+        selector:
+          dnsZones:
+            - safinakhan.com
